@@ -3,18 +3,25 @@
 // 1. Back to Top Button
 const backToTopBtn = document.getElementById('backToTop');
 
+let scrollTicking = false;
 function toggleBackToTop() {
-  if (backToTopBtn) {
-    if (window.pageYOffset > 300) {
-      backToTopBtn.classList.add('visible');
-    } else {
-      backToTopBtn.classList.remove('visible');
-    }
+  if (!scrollTicking) {
+    scrollTicking = true;
+    requestAnimationFrame(() => {
+      if (backToTopBtn) {
+        if (window.pageYOffset > 300) {
+          backToTopBtn.classList.add('visible');
+        } else {
+          backToTopBtn.classList.remove('visible');
+        }
+      }
+      scrollTicking = false;
+    });
   }
 }
 
 if (backToTopBtn) {
-  window.addEventListener('scroll', toggleBackToTop);
+  window.addEventListener('scroll', toggleBackToTop, { passive: true });
   backToTopBtn.addEventListener('click', () => {
     window.scrollTo({
       top: 0,
@@ -81,10 +88,18 @@ if (prevBtn && nextBtn && carouselTrack && carouselItems.length > 0) {
   });
 }
 
-window.addEventListener('resize', () => {
-  if (mobileCarouselInterval) clearInterval(mobileCarouselInterval);
-  if (isMobile() && carouselTrack) startMobileCarouselAutoSlide();
-});
+// Debounced resize handler for better performance
+let resizeTimeout;
+function handleResize() {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    if (mobileCarouselInterval) clearInterval(mobileCarouselInterval);
+    if (isMobile() && carouselTrack) startMobileCarouselAutoSlide();
+    updateCarousel({ scroll: false });
+  }, 150);
+}
+
+window.addEventListener('resize', handleResize, { passive: true });
 
 document.addEventListener('DOMContentLoaded', () => {
   if (isMobile() && carouselTrack) startMobileCarouselAutoSlide();
@@ -110,18 +125,26 @@ if (newsletterForm) {
   });
 }
 
+// Footer Newsletter Signup - Removed
+
 // 4. Improved Hamburger Menu for Mobile
 const hamburger = document.querySelector('.hamburger');
 const navLinks = document.querySelector('.nav-links');
+const navbar = document.querySelector('.navbar');
 if (hamburger && navLinks) {
   hamburger.addEventListener('click', () => {
     const isOpen = navLinks.classList.toggle('open');
     hamburger.setAttribute('aria-expanded', isOpen);
     
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+    // Add/remove class to navbar for CSS animation
+    if (navbar) {
+      if (isOpen) {
+        navbar.classList.add('menu-open');
+        document.body.style.overflow = 'hidden';
+      } else {
+        navbar.classList.remove('menu-open');
+        document.body.style.overflow = '';
+      }
     }
   });
   
@@ -129,6 +152,7 @@ if (hamburger && navLinks) {
     link.addEventListener('click', () => {
       navLinks.classList.remove('open');
       hamburger.setAttribute('aria-expanded', 'false');
+      if (navbar) navbar.classList.remove('menu-open');
       document.body.style.overflow = '';
     });
   });
@@ -137,6 +161,7 @@ if (hamburger && navLinks) {
     if (e.key === 'Escape' && navLinks.classList.contains('open')) {
       navLinks.classList.remove('open');
       hamburger.setAttribute('aria-expanded', 'false');
+      if (navbar) navbar.classList.remove('menu-open');
       document.body.style.overflow = '';
       hamburger.focus();
     }
@@ -219,7 +244,11 @@ function renderReview(idx) {
     <div class="review-text">${review.text}</div>
   `;
   reviewSlide.style.opacity = 0;
-  setTimeout(() => { reviewSlide.style.opacity = 1; }, 50);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      reviewSlide.style.opacity = 1;
+    });
+  });
   updateReviewDots(idx);
 }
 
@@ -288,6 +317,7 @@ const orderModal = document.getElementById('orderModal');
 const orderModalClose = document.getElementById('orderModalClose');
 const heroOrderBtn = document.getElementById('heroOrderBtn');
 const orderNowBtns = document.querySelectorAll('.cta-btn');
+const footerOrderBtn = document.getElementById('footerOrderBtn');
 let lastFocusedElement = null;
 
 function getFocusableElements() {
@@ -337,12 +367,14 @@ function openOrderModal() {
     
     orderModal.style.display = 'flex';
     
-    setTimeout(() => {
-      const focusableElements = getFocusableElements();
-      if (focusableElements.length > 0) {
-        focusableElements[0].focus();
-      }
-    }, 100);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const focusableElements = getFocusableElements();
+        if (focusableElements.length > 0) {
+          focusableElements[0].focus();
+        }
+      });
+    });
     
     document.addEventListener('keydown', trapFocus);
   }
@@ -392,6 +424,14 @@ orderNowBtns.forEach(btn => {
     });
   }
 });
+
+// Footer order button
+if (footerOrderBtn) {
+  footerOrderBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    openOrderModal();
+  });
+}
 
 if (orderModalClose) orderModalClose.addEventListener('click', closeOrderModal);
 if (orderModal) {
@@ -448,7 +488,7 @@ if (orderModal) {
       setActiveDot(currentIndex());
       ticking = false;
     });
-  });
+  }, { passive: true });
 
   if (prev) prev.addEventListener('click', () => snapTo(currentIndex() - 1));
   if (next) next.addEventListener('click', () => snapTo(currentIndex() + 1));
@@ -543,6 +583,61 @@ function getCategoryIcon(categoryName) {
 // Store menu data globally for filtering
 let allMenuItems = [];
 let allCategories = {};
+let currentActiveCategory = 'all';
+
+// Active Category Management Function
+function activeCategory(categoryName) {
+  // If categoryName is provided, set it as active
+  if (categoryName !== undefined && categoryName !== null) {
+    currentActiveCategory = categoryName || 'all';
+    
+    // Update UI - remove active class from all buttons
+    const allButtons = document.querySelectorAll('.category-filter-btn');
+    allButtons.forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Add active class to the selected button
+    const targetButton = document.querySelector(`.category-filter-btn[data-category="${currentActiveCategory}"]`);
+    if (targetButton) {
+      targetButton.classList.add('active');
+      
+      // Scroll the active button into view (for horizontal scrolling)
+      // Use requestAnimationFrame for optimized smooth scrolling
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          try {
+            targetButton.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'nearest', 
+              inline: 'center' 
+            });
+          } catch (e) {
+            // Fallback if scrollIntoView fails
+            targetButton.scrollIntoView();
+          }
+        });
+      });
+    }
+    
+    return currentActiveCategory;
+  }
+  
+  // If no argument provided, return the current active category
+  const activeButton = document.querySelector('.category-filter-btn.active');
+  if (activeButton && activeButton.dataset.category) {
+    currentActiveCategory = activeButton.dataset.category;
+  } else {
+    // Fallback: ensure "All" is active if no active button found
+    const allButton = document.querySelector('.category-filter-btn[data-category="all"]');
+    if (allButton) {
+      allButton.classList.add('active');
+      currentActiveCategory = 'all';
+    }
+  }
+  
+  return currentActiveCategory || 'all';
+}
 
 // Render menu items by category with filtering support
 function renderMenuItems(menuData, filterCategory = 'all', searchQuery = '') {
@@ -602,6 +697,11 @@ function renderMenuItems(menuData, filterCategory = 'all', searchQuery = '') {
     // Create category filter buttons
     createCategoryFilters(Object.keys(categories));
     
+    // Initialize active category if not set
+    if (!document.querySelector('.category-filter-btn.active')) {
+      activeCategory(filterCategory);
+    }
+    
     // Filter items based on category and search
     let filteredCategories = {};
     Object.keys(categories).forEach(categoryName => {
@@ -627,11 +727,8 @@ function renderMenuItems(menuData, filterCategory = 'all', searchQuery = '') {
       }
     });
     
-    console.log(`Rendering ${Object.keys(filteredCategories).length} categories:`, Object.keys(filteredCategories));
-    
     // Render each category
     Object.keys(filteredCategories).forEach(categoryName => {
-      console.log(`Rendering category "${categoryName}" with ${filteredCategories[categoryName].length} items`);
       const categorySection = document.createElement('section');
       categorySection.className = 'menu-category-section';
       categorySection.setAttribute('aria-labelledby', `category-${categoryName.replace(/\s+/g, '-').toLowerCase()}`);
@@ -686,6 +783,19 @@ function renderMenuItems(menuData, filterCategory = 'all', searchQuery = '') {
       container.appendChild(categorySection);
     });
     
+    // Smooth scroll to first category section after render (if filtering)
+    if (filterCategory !== 'all' && Object.keys(filteredCategories).length > 0) {
+      requestAnimationFrame(() => {
+        const firstCategory = container.querySelector('.menu-category-section');
+        if (firstCategory) {
+          firstCategory.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }
+      });
+    }
+    
     // If no categories found, show message
     if (Object.keys(filteredCategories).length === 0) {
       container.innerHTML = `
@@ -697,7 +807,6 @@ function renderMenuItems(menuData, filterCategory = 'all', searchQuery = '') {
     }
     
   } catch (err) {
-    console.error('Error rendering menu:', err);
     if (error) {
       error.style.display = 'block';
       error.innerHTML = `<p>Error loading menu: ${err.message}</p>`;
@@ -712,36 +821,44 @@ function createCategoryFilters(categoryNames) {
   const filterContainer = document.getElementById('categoryFilterButtons');
   if (!filterContainer) return;
   
+  // Remove only dynamically created category buttons (not the "All" button)
+  const existingButtons = filterContainer.querySelectorAll('.category-filter-btn:not([data-category="all"])');
+  existingButtons.forEach(btn => btn.remove());
+  
   // Sort categories alphabetically
   const sortedCategories = [...categoryNames].sort();
   
-  filterContainer.innerHTML = sortedCategories.map(categoryName => {
-    const iconClass = getCategoryIcon(categoryName);
-    return `
-      <button class="category-filter-btn" data-category="${categoryName}" aria-label="Filter by ${categoryName}">
-        <i class="fas ${iconClass}" aria-hidden="true"></i>
-        <span>${categoryName}</span>
-      </button>
-    `;
-  }).join('');
+  // Create and append category buttons
+  sortedCategories.forEach(categoryName => {
+    const button = document.createElement('button');
+    button.className = 'category-filter-btn';
+    button.setAttribute('data-category', categoryName);
+    button.setAttribute('aria-label', `Filter by ${categoryName}`);
+    button.innerHTML = `<span>${categoryName}</span>`;
+    filterContainer.appendChild(button);
+  });
   
-  // Add event listeners to filter buttons
-  const filterButtons = filterContainer.querySelectorAll('.category-filter-btn');
-  filterButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      // Update active state
-      document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  // Use event delegation on the container to handle all button clicks
+  // This avoids duplicate listeners and works for dynamically added buttons
+  if (!filterContainer.hasAttribute('data-listener-attached')) {
+    filterContainer.addEventListener('click', (e) => {
+      const button = e.target.closest('.category-filter-btn');
+      if (!button) return;
+      
+      // Get category and set it as active
+      const category = button.dataset.category;
+      activeCategory(category);
       
       // Get search query
       const searchInput = document.getElementById('menuSearchInput');
       const searchQuery = searchInput ? searchInput.value.trim() : '';
       
       // Filter and render
-      const category = btn.dataset.category;
       renderMenuItems(allMenuItems, category, searchQuery);
     });
-  });
+    
+    filterContainer.setAttribute('data-listener-attached', 'true');
+  }
 }
 
 // Initialize search and filter functionality
@@ -752,32 +869,35 @@ function initMenuSearchFilter() {
   
   if (!searchInput) return;
   
-  // Search input handler
+  // Search input handler with optimized debouncing
   let searchTimeout;
+  let searchRafId;
   searchInput.addEventListener('input', (e) => {
     clearTimeout(searchTimeout);
+    if (searchRafId) cancelAnimationFrame(searchRafId);
+    
     const query = e.target.value.trim();
     
-    // Show/hide clear button
+    // Show/hide clear button immediately (no debounce needed)
     if (clearSearch) {
       clearSearch.style.display = query ? 'flex' : 'none';
     }
     
-    // Debounce search
-    searchTimeout = setTimeout(() => {
-      const activeCategory = document.querySelector('.category-filter-btn.active');
-      const category = activeCategory ? activeCategory.dataset.category : 'all';
-      renderMenuItems(allMenuItems, category, query);
-    }, 300);
-  });
+    // Debounce search with requestAnimationFrame for smoother performance
+    searchRafId = requestAnimationFrame(() => {
+      searchTimeout = setTimeout(() => {
+        const category = activeCategory();
+        renderMenuItems(allMenuItems, category, query);
+      }, 300);
+    });
+  }, { passive: true });
   
   // Clear search handler
   if (clearSearch) {
     clearSearch.addEventListener('click', () => {
       searchInput.value = '';
       clearSearch.style.display = 'none';
-      const activeCategory = document.querySelector('.category-filter-btn.active');
-      const category = activeCategory ? activeCategory.dataset.category : 'all';
+      const category = activeCategory();
       renderMenuItems(allMenuItems, category, '');
       searchInput.focus();
     });
@@ -786,8 +906,7 @@ function initMenuSearchFilter() {
   // All filter button handler
   if (allFilterBtn) {
     allFilterBtn.addEventListener('click', () => {
-      document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active'));
-      allFilterBtn.classList.add('active');
+      activeCategory('all');
       const query = searchInput.value.trim();
       renderMenuItems(allMenuItems, 'all', query);
     });
@@ -812,21 +931,16 @@ async function loadMenu() {
   try {
     // Try menu endpoint first (main-menu/1/categories/...)
     const menuURL = DELIVERGATE_API.getMenuURL(1);
-    console.log('📡 Fetching menu from:', menuURL);
     
     let apiData = await DELIVERGATE_API.fetchWithTimeout(menuURL);
-    console.log('📦 API Response received:', apiData);
     
     // Process Delivergate API response
     let menuItems = [];
     
     // Handle categorized data structure: { data: { "Category Name": [items], ... } }
     if (apiData && apiData.data && typeof apiData.data === 'object' && !Array.isArray(apiData.data)) {
-      console.log('Processing categorized menu structure...');
-      console.log('Found categories:', Object.keys(apiData.data));
       Object.entries(apiData.data).forEach(([categoryName, items]) => {
         if (Array.isArray(items)) {
-          console.log(`Processing category "${categoryName}" with ${items.length} items`);
           items.forEach(item => {
             menuItems.push({
               id: item.id || item.item_id || item.product_id,
@@ -841,7 +955,6 @@ async function loadMenu() {
           // Handle nested structure where items might be in a sub-object
           const nestedItems = items.items || items.menu_items || items.products || [];
           if (Array.isArray(nestedItems)) {
-            console.log(`Processing category "${categoryName}" with ${nestedItems.length} nested items`);
             nestedItems.forEach(item => {
               menuItems.push({
                 id: item.id || item.item_id || item.product_id,
@@ -855,14 +968,12 @@ async function loadMenu() {
           }
         }
       });
-      console.log(`Total items extracted: ${menuItems.length} from ${Object.keys(apiData.data).length} categories`);
     } 
     // Handle categories array that might contain items or subcategories
     else if (apiData && Array.isArray(apiData)) {
       // Check if it's an array of categories with items
       const firstItem = apiData[0];
       if (firstItem && (firstItem.items || firstItem.menu_items || firstItem.products)) {
-        console.log('Processing categories with nested items...');
         apiData.forEach(category => {
           const categoryName = category.name || category.category_name || category.title || 'Other';
           const items = category.items || category.menu_items || category.products || [];
@@ -879,7 +990,6 @@ async function loadMenu() {
         });
       } else {
         // Treat as direct array of items
-        console.log('Processing direct array of items...');
         menuItems = apiData.map(item => ({
           id: item.id || item.item_id,
           name: item.name || item.item_name || item.title || 'Unnamed Item',
@@ -910,11 +1020,12 @@ async function loadMenu() {
     }
     
     if (menuItems.length > 0) {
-      console.log(`✅ Rendering ${menuItems.length} menu items`);
       renderMenuItems(menuItems);
       // Initialize search and filter after menu is rendered
       setTimeout(() => {
         initMenuSearchFilter();
+        // Ensure "All" is active on initial load
+        activeCategory('all');
       }, 100);
       loading.style.display = 'none';
     } else {
@@ -922,9 +1033,6 @@ async function loadMenu() {
     }
     
   } catch (err) {
-    console.error('❌ Delivergate API Error:', err.message);
-    console.error('Full error:', err);
-    
     // Show static menu on error
     if (staticGallery) staticGallery.style.display = 'grid';
     if (container) container.style.display = 'none';
