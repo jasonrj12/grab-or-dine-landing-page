@@ -122,9 +122,14 @@
   <header>
     <nav class="navbar" role="navigation" aria-label="Main navigation">
       <a href="index.html" class="logo" aria-label="Grab Or Dine Home">Grab Or Dine</a>
-      <button class="hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
-        <span class="hamburger-icon"></span>
-      </button>
+      <!-- From Uiverse.io by JulanDeAlb -->
+      <label class="hamburger" aria-label="Toggle navigation menu">
+        <input type="checkbox" aria-expanded="false">
+        <svg viewBox="0 0 32 32">
+          <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
+          <path class="line" d="M7 16 27 16"></path>
+        </svg>
+      </label>
       <ul class="nav-links" role="menubar">
         <li role="none"><a href="index.html" role="menuitem">Home</a></li>
         <li role="none"><a href="menu.html" role="menuitem" aria-current="page">Menu</a></li>

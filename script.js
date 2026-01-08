@@ -128,44 +128,58 @@ if (newsletterForm) {
 // Footer Newsletter Signup - Removed
 
 // 4. Improved Hamburger Menu for Mobile
-const hamburger = document.querySelector('.hamburger');
-const navLinks = document.querySelector('.nav-links');
-const navbar = document.querySelector('.navbar');
-if (hamburger && navLinks) {
-  hamburger.addEventListener('click', () => {
-    const isOpen = navLinks.classList.toggle('open');
-    hamburger.setAttribute('aria-expanded', isOpen);
-    
-    // Add/remove class to navbar for CSS animation
-    if (navbar) {
-      if (isOpen) {
-        navbar.classList.add('menu-open');
-        document.body.style.overflow = 'hidden';
-      } else {
-        navbar.classList.remove('menu-open');
-        document.body.style.overflow = '';
-      }
-    }
-  });
-  
-  navLinks.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
+function initHamburgerMenu() {
+  const hamburger = document.querySelector('.hamburger');
+  const hamburgerInput = hamburger ? hamburger.querySelector('input[type="checkbox"]') : null;
+  const navLinks = document.querySelector('.nav-links');
+  const navbar = document.querySelector('.navbar');
+
+  if (!hamburger || !hamburgerInput || !navLinks) {
+    return;
+  }
+
+  function toggleMenu(isOpen) {
+    if (isOpen) {
+      navLinks.classList.add('open');
+      hamburgerInput.checked = true;
+      hamburgerInput.setAttribute('aria-expanded', 'true');
+      if (navbar) navbar.classList.add('menu-open');
+      document.body.style.overflow = 'hidden';
+    } else {
       navLinks.classList.remove('open');
-      hamburger.setAttribute('aria-expanded', 'false');
+      hamburgerInput.checked = false;
+      hamburgerInput.setAttribute('aria-expanded', 'false');
       if (navbar) navbar.classList.remove('menu-open');
       document.body.style.overflow = '';
+    }
+  }
+
+  // Listen to checkbox change event (fires when checkbox state changes via label click)
+  hamburgerInput.addEventListener('change', function(e) {
+    toggleMenu(e.target.checked);
+  });
+  
+  // Close menu when clicking nav links
+  navLinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      toggleMenu(false);
     });
   });
   
+  // Close menu with Escape key
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && navLinks.classList.contains('open')) {
-      navLinks.classList.remove('open');
-      hamburger.setAttribute('aria-expanded', 'false');
-      if (navbar) navbar.classList.remove('menu-open');
-      document.body.style.overflow = '';
+      toggleMenu(false);
       hamburger.focus();
     }
   });
+}
+
+// Initialize hamburger menu when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initHamburgerMenu);
+} else {
+  initHamburgerMenu();
 }
 
 // 5. Enhanced Dynamic Reviews Carousel
