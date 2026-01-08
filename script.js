@@ -1056,3 +1056,11 @@ if (window.location.pathname.includes('menu.html') || document.querySelector('.m
     loadMenu();
   });
 }
+
+// Update copyright year dynamically
+document.addEventListener('DOMContentLoaded', function() {
+  const yearElement = document.getElementById('current-year');
+  if (yearElement) {
+    yearElement.textContent = new Date().getFullYear();
+  }
+});
