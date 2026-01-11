@@ -5033,6 +5033,11 @@ main {
               radial-gradient(circle at 50% 80%, rgba(102, 126, 234, 0.15) 0%, transparent 60%);
 }
 
+.menu-favourite-item:nth-child(4) .favourite-image {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 30%, #1a1a1a 100%),
+              radial-gradient(circle at 40% 60%, rgba(34, 193, 195, 0.15) 0%, transparent 60%);
+}
+
 .menu-favourite-item:hover .favourite-image {
   border-color: rgba(255, 255, 255, 0.15);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -5330,14 +5335,20 @@ main {
   text-transform: none;
 }
 
-/* Menu favourites grid - 3 items */
+/* Menu favourites grid - responsive */
 .menu-favourites-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
   list-style: none;
   padding: 0;
   margin: 0;
+}
+
+@media (max-width: 900px) {
+  .menu-favourites-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 /* Mobile Responsive for Brands Page */
