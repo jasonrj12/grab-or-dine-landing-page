@@ -60,15 +60,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   
-  <!-- Preload critical assets -->
-  <link rel="preload" href="style.css" as="style">
-  
   <!-- Font loading with display swap for better performance -->
-  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
   <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet"></noscript>
   
   <!-- Font Awesome - Load asynchronously -->
-  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer"></noscript>
   
   <link rel="stylesheet" href="style.css">
@@ -167,6 +164,28 @@
           <p class="brand-description">Experience authentic Sri Lankan cuisine with rich flavors and traditional recipes crafted with the finest ingredients. From aromatic biryanis to flavorful curries, Ceylon Flavours brings the taste of Sri Lanka to your table.</p>
         </div>
         
+        <div class="brand-features-section">
+          <h3 class="brand-features-title">Why Choose Ceylon Flavours</h3>
+          <div class="brand-features-grid" role="list">
+            <div class="brand-feature-item" role="listitem">
+              <i class="fas fa-pepper-hot" aria-hidden="true"></i>
+              <span>Authentic Spices</span>
+            </div>
+            <div class="brand-feature-item" role="listitem">
+              <i class="fas fa-leaf" aria-hidden="true"></i>
+              <span>Fresh Ingredients</span>
+            </div>
+            <div class="brand-feature-item" role="listitem">
+              <i class="fas fa-utensils" aria-hidden="true"></i>
+              <span>Traditional Recipes</span>
+            </div>
+            <div class="brand-feature-item" role="listitem">
+              <i class="fas fa-star" aria-hidden="true"></i>
+              <span>Premium Quality</span>
+            </div>
+          </div>
+        </div>
+        
         <div class="menu-favourites-section">
           <h3 class="menu-favourites-title">Menu Favourites</h3>
           <div class="menu-favourites-grid" role="list">
@@ -203,6 +222,28 @@
         <div class="brand-header">
           <h2 id="rienzies-heading" class="brand-title">Rienzies</h2>
           <p class="brand-description">Savor the fusion of modern culinary techniques with classic flavors. Rienzies offers a unique dining experience with a focus on quality ingredients and exceptional taste that delights every palate.</p>
+        </div>
+        
+        <div class="brand-features-section">
+          <h3 class="brand-features-title">Why Choose Rienzies</h3>
+          <div class="brand-features-grid" role="list">
+            <div class="brand-feature-item" role="listitem">
+              <i class="fas fa-fire" aria-hidden="true"></i>
+              <span>Bold Flavors</span>
+            </div>
+            <div class="brand-feature-item" role="listitem">
+              <i class="fas fa-seedling" aria-hidden="true"></i>
+              <span>Quality Ingredients</span>
+            </div>
+            <div class="brand-feature-item" role="listitem">
+              <i class="fas fa-heart" aria-hidden="true"></i>
+              <span>Made with Love</span>
+            </div>
+            <div class="brand-feature-item" role="listitem">
+              <i class="fas fa-bolt" aria-hidden="true"></i>
+              <span>Fast Service</span>
+            </div>
+          </div>
         </div>
         
         <div class="menu-favourites-section">
