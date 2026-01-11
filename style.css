@@ -1072,7 +1072,50 @@ footer::before {
   width: 100%;
   height: 240px;
   overflow: hidden;
-  background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+  background: linear-gradient(135deg, #1a1a1a 0%, #252525 50%, #1a1a1a 100%);
+}
+
+.featured-card-image::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 107, 53, 0.2) 0%, transparent 60%),
+              radial-gradient(circle at 70% 70%, rgba(255, 184, 0, 0.15) 0%, transparent 60%);
+  opacity: 0.6;
+  z-index: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.featured-card:hover .featured-card-image::before {
+  opacity: 1;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 107, 53, 0.3) 0%, transparent 60%),
+              radial-gradient(circle at 70% 70%, rgba(255, 184, 0, 0.2) 0%, transparent 60%);
+}
+
+/* Different gradient backgrounds for each featured card */
+.featured-card:nth-child(1) .featured-card-image {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 30%, #1a1a1a 100%),
+              radial-gradient(circle at 20% 20%, rgba(255, 107, 53, 0.25) 0%, transparent 70%);
+}
+
+.featured-card:nth-child(2) .featured-card-image {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 30%, #1a1a1a 100%),
+              radial-gradient(circle at 80% 20%, rgba(255, 184, 0, 0.2) 0%, transparent 70%);
+}
+
+.featured-card:nth-child(3) .featured-card-image {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 30%, #1a1a1a 100%),
+              radial-gradient(circle at 50% 80%, rgba(102, 126, 234, 0.2) 0%, transparent 70%);
+}
+
+.featured-card:nth-child(4) .featured-card-image {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 30%, #1a1a1a 100%),
+              radial-gradient(circle at 30% 70%, rgba(255, 107, 53, 0.2) 0%, transparent 70%),
+              radial-gradient(circle at 70% 30%, rgba(255, 184, 0, 0.15) 0%, transparent 70%);
 }
 
 .featured-card-image::after {
@@ -1112,6 +1155,8 @@ footer::before {
   height: 100%;
   object-fit: cover;
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 2;
 }
 
 /* Mobile: Square cards with no image cropping */
@@ -1873,7 +1918,17 @@ footer::before {
   }
   .top-burger-image {
     margin-bottom: -0.5rem;
-    padding: 0.75rem 0;
+    padding: 2.5rem 0 0.75rem 0;
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .top-burger-image img {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
   }
   
   .hero {
@@ -3486,6 +3541,9 @@ body, button, a, h1, h2, h3, .logo, .footer-logo, .footer-links, .footer-link-bo
   padding: 2rem 0;
   overflow: hidden;
   box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .top-burger-image img {
@@ -3494,27 +3552,42 @@ body, button, a, h1, h2, h3, .logo, .footer-logo, .footer-links, .footer-link-bo
   height: auto;
   filter: drop-shadow(0 10px 40px rgba(0, 0, 0, 0.3));
   animation: float-burger 3s ease-in-out infinite alternate;
+  display: block;
+  margin: 0 auto;
 }
 
 @media (max-width: 600px) {
   .top-burger-image {
-    padding: 1rem 0;
+    padding: 2.5rem 0 1rem 0;
     margin-bottom: -0.5rem;
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
   .top-burger-image img {
     width: 90vw;
     max-width: 100%;
+    display: block;
+    margin: 0 auto;
   }
 }
 
 @media (max-width: 480px) {
   .top-burger-image {
-    padding: 0.75rem 0;
+    padding: 2.5rem 0 0.75rem 0;
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
   .top-burger-image img {
     width: 95vw;
+    max-width: 100%;
+    display: block;
+    margin: 0 auto;
   }
 } 
 
@@ -3891,13 +3964,36 @@ body, button, a, h1, h2, h3, .logo, .footer-logo, .footer-links, .footer-link-bo
   height: 110px;
   min-width: 110px;
   overflow: hidden;
-  background: transparent;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 50%, #f5f5f5 100%);
   position: relative;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.menu-item-image::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 107, 53, 0.1) 0%, transparent 60%),
+              radial-gradient(circle at 70% 70%, rgba(255, 184, 0, 0.08) 0%, transparent 60%);
+  opacity: 0.5;
+  z-index: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  border-radius: 12px;
+}
+
+.menu-item-card:hover .menu-item-image::before {
+  opacity: 1;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 107, 53, 0.15) 0%, transparent 60%),
+              radial-gradient(circle at 70% 70%, rgba(255, 184, 0, 0.12) 0%, transparent 60%);
 }
 
 .menu-item-image img {
@@ -3906,6 +4002,8 @@ body, button, a, h1, h2, h3, .logo, .footer-logo, .footer-links, .footer-link-bo
   object-fit: contain;
   transition: transform 0.3s ease;
   display: block;
+  position: relative;
+  z-index: 2;
   position: relative;
   z-index: 2;
 }
@@ -4892,9 +4990,45 @@ main {
   aspect-ratio: 1;
   border-radius: 12px;
   overflow: hidden;
-  background: var(--secondary-dark);
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
   border: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.3s ease;
+  position: relative;
+}
+
+.favourite-image::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 107, 53, 0.15) 0%, transparent 50%),
+              radial-gradient(circle at 70% 70%, rgba(255, 184, 0, 0.1) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.menu-favourite-item:hover .favourite-image::before {
+  opacity: 1;
+}
+
+/* Different gradient backgrounds for variety */
+.menu-favourite-item:nth-child(1) .favourite-image {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 30%, #1a1a1a 100%),
+              radial-gradient(circle at 20% 20%, rgba(255, 107, 53, 0.2) 0%, transparent 60%);
+}
+
+.menu-favourite-item:nth-child(2) .favourite-image {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 30%, #1a1a1a 100%),
+              radial-gradient(circle at 80% 20%, rgba(255, 184, 0, 0.15) 0%, transparent 60%);
+}
+
+.menu-favourite-item:nth-child(3) .favourite-image {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 30%, #1a1a1a 100%),
+              radial-gradient(circle at 50% 80%, rgba(102, 126, 234, 0.15) 0%, transparent 60%);
 }
 
 .menu-favourite-item:hover .favourite-image {
@@ -4907,6 +5041,8 @@ main {
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
+  position: relative;
+  z-index: 2;
 }
 
 .menu-favourite-item:hover .favourite-image img {
