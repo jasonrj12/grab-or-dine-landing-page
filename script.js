@@ -1077,4 +1077,157 @@ document.addEventListener('DOMContentLoaded', function() {
   if (yearElement) {
     yearElement.textContent = new Date().getFullYear();
   }
+  
+  // Initialize GSAP Hero Animations
+  initHeroAnimations();
 });
+
+// ============================================
+// GSAP HERO ANIMATIONS
+// ============================================
+function initHeroAnimations() {
+  // Check if GSAP is loaded
+  if (typeof gsap === 'undefined') {
+    console.warn('GSAP not loaded');
+    return;
+  }
+  
+  // Register ScrollTrigger plugin
+  if (typeof ScrollTrigger !== 'undefined') {
+    gsap.registerPlugin(ScrollTrigger);
+  }
+  
+  // Set initial states
+  gsap.set('.hero-badge', { opacity: 0, y: -30 });
+  gsap.set('.hero-title-line', { opacity: 0, y: 50 });
+  gsap.set('.hero-subtitle', { opacity: 0, y: 30 });
+  gsap.set('.hero-tagline', { opacity: 0, y: 20 });
+  gsap.set('.hero-cta-group', { opacity: 0, y: 30 });
+  gsap.set('.hero-scroll-indicator', { opacity: 0 });
+  gsap.set('.hero-shape', { opacity: 0, scale: 0.5 });
+  
+  // Create master timeline
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+  
+  // 1. Badge animation
+  tl.to('.hero-badge', {
+    opacity: 1,
+    y: 0,
+    duration: 0.8,
+    ease: 'back.out(1.7)'
+  });
+  
+  // 2. Title lines stagger animation
+  tl.to('.hero-title-line', {
+    opacity: 1,
+    y: 0,
+    duration: 1,
+    stagger: 0.2,
+    ease: 'power3.out'
+  }, '-=0.4');
+  
+  // 3. Subtitle fade in
+  tl.to('.hero-subtitle', {
+    opacity: 1,
+    y: 0,
+    duration: 0.8
+  }, '-=0.5');
+  
+  // 3b. Tagline fade in
+  tl.to('.hero-tagline', {
+    opacity: 0.95,
+    y: 0,
+    duration: 0.7
+  }, '-=0.6');
+  
+  // 4. CTA buttons
+  tl.to('.hero-cta-group', {
+    opacity: 1,
+    y: 0,
+    duration: 0.8
+  }, '-=0.6');
+  
+  // 5. Scroll indicator
+  tl.to('.hero-scroll-indicator', {
+    opacity: 1,
+    duration: 0.6
+  }, '-=0.4');
+  
+  // 6. Background shapes (subtle so hero image stays visible)
+  tl.to('.hero-shape', {
+    opacity: 0.08,
+    scale: 1,
+    duration: 1.5,
+    stagger: 0.2
+  }, 0);
+  
+  if (typeof ScrollTrigger !== 'undefined') {
+    // Parallax for background shapes
+    gsap.to('.hero-shape-1', {
+      y: 150,
+      scrollTrigger: {
+        trigger: '.hero',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: true
+      }
+    });
+    
+    gsap.to('.hero-shape-2', {
+      y: -100,
+      scrollTrigger: {
+        trigger: '.hero',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: true
+      }
+    });
+  }
+  
+  // Add hover animations for CTA buttons
+  const ctaPrimary = document.querySelector('.cta-primary');
+  if (ctaPrimary) {
+    ctaPrimary.addEventListener('mouseenter', () => {
+      gsap.to(ctaPrimary, {
+        scale: 1.05,
+        duration: 0.3,
+        ease: 'power2.out'
+      });
+    });
+    
+    ctaPrimary.addEventListener('mouseleave', () => {
+      gsap.to(ctaPrimary, {
+        scale: 1,
+        duration: 0.3,
+        ease: 'power2.out'
+      });
+    });
+  }
+  
+  const ctaSecondary = document.querySelector('.cta-secondary');
+  if (ctaSecondary) {
+    ctaSecondary.addEventListener('mouseenter', () => {
+      gsap.to(ctaSecondary, {
+        scale: 1.05,
+        duration: 0.3,
+        ease: 'power2.out'
+      });
+    });
+    
+    ctaSecondary.addEventListener('mouseleave', () => {
+      gsap.to(ctaSecondary, {
+        scale: 1,
+        duration: 0.3,
+        ease: 'power2.out'
+      });
+    });
+  }
+  
+  // Add continuous rotation to badge icon
+  gsap.to('.badge-icon', {
+    rotation: 360,
+    duration: 3,
+    ease: 'linear',
+    repeat: -1
+  });
+}

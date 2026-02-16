@@ -76,7 +76,8 @@
   
   <!-- Preload critical assets -->
   <link rel="preload" href="style.css" as="style">
-  <link rel="preload" href="images/burger3.webp" as="image" fetchpriority="high">
+  <link rel="preload" href="images/hero4.png" as="image" fetchpriority="high">
+  <link rel="preload" href="images/hero4@2x.png" as="image" fetchpriority="high" media="(min-resolution: 2dppx)">
   
   <!-- Font loading with display swap for better performance -->
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -87,6 +88,10 @@
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer"></noscript>
   
   <link rel="stylesheet" href="style.css">
+  
+  <!-- GSAP Animation Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   
   <!-- Structured Data (JSON-LD) -->
   <script type="application/ld+json">
@@ -170,14 +175,44 @@
       </ul>
     </nav>
   </header>
-    <div class="top-burger-image" aria-hidden="true">
-    <img src="images/burger3.webp" alt="" loading="eager" fetchpriority="high" width="700" height="auto" />
-  </div>
   <main id="main-content">
     <section class="hero" aria-labelledby="hero-heading">
+      <!-- Animated Background Elements -->
+      <div class="hero-bg-shapes" aria-hidden="true">
+        <div class="hero-shape hero-shape-1"></div>
+        <div class="hero-shape hero-shape-2"></div>
+        <div class="hero-shape hero-shape-3"></div>
+      </div>
+      
       <div class="hero-content">
-        <h1 id="hero-heading">Every Bite, A Burst of Flavour</h1>
-        <button class="cta-btn" id="heroOrderBtn">Order Now</button>
+        <div class="hero-badge">
+          <span class="badge-icon">⚡</span>
+          <span class="badge-text">Fast & Fresh Delivery</span>
+        </div>
+        
+        <h1 id="hero-heading" class="hero-title">
+          <span class="hero-title-line hero-line-1">Every Bite,</span>
+          <span class="hero-title-line hero-line-2">A Burst of</span>
+          <span class="hero-title-line hero-line-3 accent-text">Flavour</span>
+        </h1>
+        
+        <p class="hero-subtitle">Experience the perfect blend of taste and quality with our handcrafted burgers, crispy chicken, and more.</p>
+        <p class="hero-tagline">Grab it fresh. Dine in or get it delivered.</p>
+        
+        <div class="hero-cta-group">
+          <button class="cta-btn cta-primary" id="heroOrderBtn">
+            <span class="btn-text">Order Now</span>
+            <span class="btn-icon">→</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Scroll Indicator -->
+      <div class="hero-scroll-indicator" aria-hidden="true">
+        <div class="scroll-mouse">
+          <div class="scroll-wheel"></div>
+        </div>
+        <span class="scroll-text">Scroll to explore</span>
       </div>
     </section>
 
@@ -268,6 +303,38 @@
         </div>
         <div class="app-mockup" aria-hidden="true">
           <img src="images/GOD Mobile app mockup.png" alt="" loading="lazy" width="800" height="auto">
+        </div>
+      </div>
+    </section>
+
+    <section class="own-drivers-section" aria-labelledby="own-drivers-heading">
+      <div class="own-drivers-content">
+        <div class="own-drivers-visual" aria-hidden="true">
+          <img src="images/delivery.svg" alt="" width="280" height="280" loading="lazy">
+        </div>
+        <div class="own-drivers-text">
+          <h2 id="own-drivers-heading">Delivery by Our Own Drivers</h2>
+          <p class="own-drivers-description">We deliver with our own team. Your order goes straight from our kitchen to your door, so it stays hot and fresh.</p>
+          <ul class="own-drivers-features" role="list">
+            <li class="feature-item" role="listitem">
+              <div class="feature-icon" aria-hidden="true">
+                <i class="fas fa-route"></i>
+              </div>
+              <span>Reliable, in-house delivery</span>
+            </li>
+            <li class="feature-item" role="listitem">
+              <div class="feature-icon" aria-hidden="true">
+                <i class="fas fa-utensils"></i>
+              </div>
+              <span>Fresh from our kitchen to you</span>
+            </li>
+            <li class="feature-item" role="listitem">
+              <div class="feature-icon" aria-hidden="true">
+                <i class="fas fa-hand-holding-heart"></i>
+              </div>
+              <span>Friendly, familiar faces</span>
+            </li>
+          </ul>
         </div>
       </div>
     </section>
