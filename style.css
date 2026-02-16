@@ -1974,29 +1974,45 @@ footer::before {
 
 /* Animate Hero CTA Button - Removed pulse animation */
 
-/* Responsive */
+/* Responsive - tablet and below: vertical layout, mobile-optimized background */
 @media (max-width: 900px) {
   .hero {
     flex-direction: column;
-    text-align: center;
-    background: linear-gradient(180deg, rgba(12, 12, 12, 0.75) 0%, rgba(18, 18, 18, 0.5) 40%, rgba(15, 15, 15, 0.35) 100%), url('images/hero3.webp') 50% 40% / cover no-repeat;
+    align-items: stretch;
+    justify-content: center;
+    text-align: left;
+    background: linear-gradient(180deg, rgba(12, 12, 12, 0.78) 0%, rgba(18, 18, 18, 0.5) 35%, rgba(15, 15, 15, 0.4) 100%), url('images/hero3.webp') 50% 40% / cover no-repeat;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+    padding-bottom: max(4rem, env(safe-area-inset-bottom) + 2rem);
   }
   .hero-content {
-    margin-left: auto;
-    text-align: center;
-    align-items: center;
+    margin-left: 0;
+    margin-right: auto;
+    text-align: left;
+    align-items: flex-start;
+    max-width: 100%;
+    padding: 0;
   }
   .hero-subtitle,
   .hero-tagline {
-    margin-left: auto;
+    margin-left: 0;
     margin-right: auto;
+    max-width: 100%;
   }
   .hero-cta-group {
-    justify-content: center;
+    justify-content: flex-start;
+    width: 100%;
+    max-width: 100%;
   }
   .hero-content .cta-btn {
-    margin-left: auto;
+    margin-left: 0;
     margin-right: auto;
+    min-height: 48px;
+    min-width: 160px;
+    padding: 0.875rem 1.75rem;
   }
   .hero-image img {
     margin-top: 2rem;
@@ -2180,36 +2196,40 @@ footer::before {
   }
   
   .hero {
-    padding: 6rem 1rem 4rem 1rem;
+    padding: 5.5rem max(1rem, env(safe-area-inset-left)) 4rem max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(4rem, calc(env(safe-area-inset-bottom) + 2rem));
+    padding-top: max(5.5rem, calc(env(safe-area-inset-top) + 4rem));
     margin-top: 0;
     min-height: 100vh;
+    min-height: 100dvh;
     background-attachment: scroll;
   }
   
   .hero-content {
     max-width: 100%;
     padding: 0;
-    margin-left: auto;
-    text-align: center;
-    align-items: center;
+    margin-left: 0;
+    text-align: left;
+    align-items: flex-start;
   }
   
   .hero-tagline {
     font-size: 0.9rem;
-    margin-left: auto;
+    margin-left: 0;
     margin-right: auto;
   }
   
   .hero-title {
-    font-size: 2.5rem;
+    font-size: clamp(1.75rem, 6vw + 1rem, 2.5rem);
     line-height: 1.2;
     margin-bottom: 1rem;
     word-wrap: break-word;
   }
   
   .hero-subtitle {
-    font-size: 1rem;
-    margin-bottom: 2rem;
+    font-size: clamp(0.9375rem, 2.5vw + 0.5rem, 1rem);
+    margin-bottom: 1.25rem;
+    line-height: 1.55;
   }
   
   .hero-badge {
@@ -2219,15 +2239,18 @@ footer::before {
   }
   
   .hero-cta-group {
-    flex-direction: column;
+    flex-direction: row;
     gap: 0.75rem;
+    justify-content: flex-start;
   }
   
   .cta-btn {
-    padding: 0.875rem 2rem;
+    padding: 0.875rem 1.75rem;
     font-size: 0.95rem;
-    width: 100%;
-    max-width: 300px;
+    min-height: 48px;
+    width: auto;
+    min-width: 160px;
+    max-width: 280px;
   }
   
   .hero-stats {
@@ -2251,7 +2274,9 @@ footer::before {
   }
   
   .hero-scroll-indicator {
-    bottom: 1rem;
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
   }
   
   .hero-shape-1,
@@ -2348,14 +2373,17 @@ footer::before {
     font-size: 1rem;
   }
   .hero {
-    padding-top: 5rem;
-    padding-bottom: 4rem;
+    padding-top: max(5rem, calc(env(safe-area-inset-top) + 3.5rem));
+    padding-bottom: max(4rem, calc(env(safe-area-inset-bottom) + 2rem));
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
     min-height: 100vh;
+    min-height: 100dvh;
     background-attachment: scroll;
   }
   
   .hero-scroll-indicator {
-    bottom: 0.75rem;
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
     transform: translateX(-50%) scale(0.9);
   }
   
@@ -2381,8 +2409,11 @@ footer::before {
     box-sizing: border-box;
   }
   
-  /* Prevent any element from causing horizontal scroll */
-  * {
+  /* Prevent horizontal scroll without breaking flex/grid */
+  .hero-content,
+  .hero-subtitle,
+  .hero-tagline,
+  main > section > * {
     max-width: 100%;
   }
   
