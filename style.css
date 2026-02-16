@@ -3339,8 +3339,8 @@ footer::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 280px;
-  height: 280px;
+  width: 380px;
+  height: 380px;
   flex-shrink: 0;
   padding: 1.5rem;
 }
@@ -3400,8 +3400,8 @@ footer::before {
   }
 
   .own-drivers-visual {
-    width: 200px;
-    height: 200px;
+    width: 280px;
+    height: 280px;
     margin: 0 auto;
     padding: 1.25rem;
   }
@@ -3433,8 +3433,8 @@ footer::before {
   }
 
   .own-drivers-visual {
-    width: 160px;
-    height: 160px;
+    width: 220px;
+    height: 220px;
   }
 
   .own-drivers-section h2 {
