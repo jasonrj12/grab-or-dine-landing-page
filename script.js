@@ -1,32 +1,65 @@
 // script.js - Enhanced with accessibility and UX improvements
 
-// 1. Back to Top Button
+// Performance optimization: Use passive event listeners for better scroll performance
+// Enable smooth scrolling with CSS scroll-behavior and JavaScript fallback
+
+// Smooth scroll polyfill for older browsers
+if (!('scrollBehavior' in document.documentElement.style)) {
+  // Load smooth scroll polyfill if needed
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/smoothscroll-polyfill@0.4.4/dist/smoothscroll.min.js';
+  document.head.appendChild(script);
+}
+
+// 1. Back to Top Button with optimized scroll handling
 const backToTopBtn = document.getElementById('backToTop');
 
 let scrollTicking = false;
+let lastScrollY = 0;
+
 function toggleBackToTop() {
   if (!scrollTicking) {
     scrollTicking = true;
     requestAnimationFrame(() => {
+      const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
+
       if (backToTopBtn) {
-        if (window.pageYOffset > 300) {
+        if (currentScrollY > 300) {
           backToTopBtn.classList.add('visible');
         } else {
           backToTopBtn.classList.remove('visible');
         }
       }
+
+      lastScrollY = currentScrollY;
       scrollTicking = false;
     });
   }
 }
 
 if (backToTopBtn) {
+  // Use passive listener for better scroll performance
   window.addEventListener('scroll', toggleBackToTop, { passive: true });
-  backToTopBtn.addEventListener('click', () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+
+  backToTopBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    // Smooth scroll to top with fallback
+    if ('scrollBehavior' in document.documentElement.style) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    } else {
+      // Fallback smooth scroll for older browsers
+      const scrollToTop = () => {
+        const currentScroll = document.documentElement.scrollTop || document.body.scrollTop;
+        if (currentScroll > 0) {
+          window.requestAnimationFrame(scrollToTop);
+          window.scrollTo(0, currentScroll - currentScroll / 8);
+        }
+      };
+      scrollToTop();
+    }
   });
 }
 
@@ -44,7 +77,7 @@ function isMobile() {
 
 function updateCarousel(options = { scroll: true }) {
   if (!carouselTrack || carouselItems.length === 0) return;
-  
+
   if (isMobile()) {
     carouselItems.forEach((item, idx) => {
       item.classList.toggle('active', idx === carouselIndex);
@@ -88,15 +121,21 @@ if (prevBtn && nextBtn && carouselTrack && carouselItems.length > 0) {
   });
 }
 
-// Debounced resize handler for better performance
+// Optimized resize handler with requestAnimationFrame
 let resizeTimeout;
+let resizeRafId;
+
 function handleResize() {
   clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    if (mobileCarouselInterval) clearInterval(mobileCarouselInterval);
-    if (isMobile() && carouselTrack) startMobileCarouselAutoSlide();
-    updateCarousel({ scroll: false });
-  }, 150);
+  if (resizeRafId) cancelAnimationFrame(resizeRafId);
+
+  resizeRafId = requestAnimationFrame(() => {
+    resizeTimeout = setTimeout(() => {
+      if (mobileCarouselInterval) clearInterval(mobileCarouselInterval);
+      if (isMobile() && carouselTrack) startMobileCarouselAutoSlide();
+      updateCarousel({ scroll: false });
+    }, 150);
+  });
 }
 
 window.addEventListener('resize', handleResize, { passive: true });
@@ -110,7 +149,7 @@ const newsletterForm = document.getElementById('newsletterForm');
 const newsletterEmail = document.getElementById('newsletterEmail');
 const newsletterMsg = document.getElementById('newsletterMsg');
 if (newsletterForm) {
-  newsletterForm.addEventListener('submit', function(e) {
+  newsletterForm.addEventListener('submit', function (e) {
     e.preventDefault();
     const email = newsletterEmail.value.trim();
     if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
@@ -155,17 +194,17 @@ function initHamburgerMenu() {
   }
 
   // Listen to checkbox change event (fires when checkbox state changes via label click)
-  hamburgerInput.addEventListener('change', function(e) {
+  hamburgerInput.addEventListener('change', function (e) {
     toggleMenu(e.target.checked);
   });
-  
+
   // Close menu when clicking nav links
   navLinks.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
       toggleMenu(false);
     });
   });
-  
+
   // Close menu with Escape key
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && navLinks.classList.contains('open')) {
@@ -264,7 +303,7 @@ function renderReview(idx) {
   const review = reviews[idx];
   const stars = '★'.repeat(review.stars);
   const localGuideBadge = review.isLocalGuide ? '<span class="review-local-guide">Local Guide</span>' : '';
-  
+
   // Generate avatar color based on name for consistency
   const avatarColors = [
     'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -275,7 +314,7 @@ function renderReview(idx) {
     'linear-gradient(135deg, #30cfd0 0%, #330867 100%)'
   ];
   const avatarColor = avatarColors[idx % avatarColors.length];
-  
+
   reviewSlide.innerHTML = `
     <div class="review-header">
       <div class="review-avatar" style="background: ${avatarColor};">
@@ -371,23 +410,23 @@ function trapFocus(e) {
 function openOrderModal() {
   if (orderModal) {
     lastFocusedElement = document.activeElement;
-    
-    // Prevent background scroll
+
+    // Store current scroll position
     const scrollY = window.scrollY;
-    document.body.classList.add('modal-open');
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-    document.body.style.overflow = 'hidden';
-    
-    // Store scroll position for restoration
     document.body.setAttribute('data-scroll-y', scrollY);
-    
-    // Prevent touch scrolling on iOS
+
+    // Prevent background scroll using overflow instead of position:fixed
+    // This is more reliable across different mobile devices
+    document.body.classList.add('modal-open');
+    document.body.style.overflow = 'hidden';
+    document.body.style.height = '100vh';
+    document.body.style.touchAction = 'none';
+
+    // Prevent touch scrolling on background (iOS and Android)
     document.addEventListener('touchmove', preventScroll, { passive: false });
-    
+
     orderModal.style.display = 'flex';
-    
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const focusableElements = getFocusableElements();
@@ -396,15 +435,35 @@ function openOrderModal() {
         }
       });
     });
-    
+
     document.addEventListener('keydown', trapFocus);
   }
 }
 
 function preventScroll(e) {
   // Allow scrolling within the modal content
-  if (e.target.closest('.order-modal-content')) {
-    return;
+  const modalContent = e.target.closest('.order-modal-content');
+  if (modalContent) {
+    // Check if the content is scrollable
+    const isScrollable = modalContent.scrollHeight > modalContent.clientHeight;
+    if (isScrollable) {
+      // Allow scrolling within modal content
+      const scrollTop = modalContent.scrollTop;
+      const scrollHeight = modalContent.scrollHeight;
+      const clientHeight = modalContent.clientHeight;
+      const delta = e.touches ? e.touches[0].clientY - (e.touches[0].previousY || e.touches[0].clientY) : 0;
+
+      // Store previous touch position
+      if (e.touches && e.touches[0]) {
+        e.touches[0].previousY = e.touches[0].clientY;
+      }
+
+      // Prevent overscroll
+      if ((scrollTop <= 0 && delta > 0) || (scrollTop + clientHeight >= scrollHeight && delta < 0)) {
+        e.preventDefault();
+      }
+      return;
+    }
   }
   // Prevent scrolling on the background
   e.preventDefault();
@@ -413,24 +472,23 @@ function preventScroll(e) {
 function closeOrderModal() {
   if (orderModal) {
     orderModal.style.display = 'none';
-    
+
     // Restore background scroll
     const scrollY = document.body.getAttribute('data-scroll-y') || '0';
     document.body.classList.remove('modal-open');
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.width = '';
     document.body.style.overflow = '';
+    document.body.style.height = '';
+    document.body.style.touchAction = '';
     document.body.removeAttribute('data-scroll-y');
-    
+
     // Remove touch scroll prevention
     document.removeEventListener('touchmove', preventScroll);
-    
+
     // Restore scroll position
     window.scrollTo(0, parseInt(scrollY, 10));
-    
+
     document.removeEventListener('keydown', trapFocus);
-    
+
     if (lastFocusedElement) {
       lastFocusedElement.focus();
     }
@@ -459,7 +517,7 @@ if (orderModal) {
   orderModal.addEventListener('click', (e) => {
     if (e.target === orderModal) closeOrderModal();
   });
-  
+
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && orderModal.style.display === 'flex') {
       closeOrderModal();
@@ -468,7 +526,7 @@ if (orderModal) {
 }
 
 // 7. Menu carousel dots and arrows (if on menu page)
-(function() {
+(function () {
   const track = document.getElementById('menuCarouselTrack');
   const dotsWrap = document.getElementById('menuDots');
   const prev = document.getElementById('menuPrev');
@@ -517,7 +575,7 @@ if (orderModal) {
   dots.forEach((dot, i) => dot.addEventListener('click', () => snapTo(i)));
 
   setActiveDot(0);
-})(); 
+})();
 
 // 8. Delivergate API Configuration for Grab Or Dine
 if (typeof DELIVERGATE_API === 'undefined') {
@@ -528,24 +586,24 @@ if (typeof DELIVERGATE_API === 'undefined') {
     shop: 1,
     tenantCode: 'grabordine', // Correct tenant code from API headers
     timeout: 10000,
-    
+
     // Build API URLs
     getCategoriesURL() {
       return `${this.baseURL}/categories/webshop-brand/${this.webshopBrand}/shop/${this.shop}`;
     },
-    
+
     getMenuURL(categoryId) {
       if (!categoryId) {
         throw new Error('Category ID is required');
       }
       return `${this.baseURL}/main-menu/${categoryId}/categories/webshop-brand/${this.webshopBrand}/shop/${this.shop}`;
     },
-    
+
     // Fetch with timeout
     async fetchWithTimeout(url, options = {}) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
-      
+
       try {
         const response = await fetch(url, {
           ...options,
@@ -560,14 +618,14 @@ if (typeof DELIVERGATE_API === 'undefined') {
             ...options.headers
           }
         });
-        
+
         clearTimeout(timeoutId);
-        
+
         if (!response.ok) {
           const errorText = await response.text().catch(() => response.statusText);
           throw new Error(`API Error ${response.status}: ${errorText || response.statusText}`);
         }
-        
+
         return await response.json();
       } catch (error) {
         clearTimeout(timeoutId);
@@ -611,27 +669,27 @@ function activeCategory(categoryName) {
   // If categoryName is provided, set it as active
   if (categoryName !== undefined && categoryName !== null) {
     currentActiveCategory = categoryName || 'all';
-    
+
     // Update UI - remove active class from all buttons
     const allButtons = document.querySelectorAll('.category-filter-btn');
     allButtons.forEach(btn => {
       btn.classList.remove('active');
     });
-    
+
     // Add active class to the selected button
     const targetButton = document.querySelector(`.category-filter-btn[data-category="${currentActiveCategory}"]`);
     if (targetButton) {
       targetButton.classList.add('active');
-      
+
       // Scroll the active button into view (for horizontal scrolling)
       // Use requestAnimationFrame for optimized smooth scrolling
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           try {
-            targetButton.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'nearest', 
-              inline: 'center' 
+            targetButton.scrollIntoView({
+              behavior: 'smooth',
+              block: 'nearest',
+              inline: 'center'
             });
           } catch (e) {
             // Fallback if scrollIntoView fails
@@ -640,10 +698,10 @@ function activeCategory(categoryName) {
         });
       });
     }
-    
+
     return currentActiveCategory;
   }
-  
+
   // If no argument provided, return the current active category
   const activeButton = document.querySelector('.category-filter-btn.active');
   if (activeButton && activeButton.dataset.category) {
@@ -656,7 +714,7 @@ function activeCategory(categoryName) {
       currentActiveCategory = 'all';
     }
   }
-  
+
   return currentActiveCategory || 'all';
 }
 
@@ -668,71 +726,71 @@ function renderMenuItems(menuData, filterCategory = 'all', searchQuery = '') {
   const staticGallery = document.getElementById('staticMenuGallery');
   const searchFilter = document.getElementById('menuSearchFilter');
   const WEBSHOP_URL = 'https://order.grabordine.co.uk/food-menu';
-  
+
   if (!container) return;
-  
+
   try {
     // Hide loading and error states
     if (loading) loading.style.display = 'none';
     if (error) error.style.display = 'none';
-    
+
     // Hide static gallery when dynamic menu loads
     if (staticGallery) staticGallery.style.display = 'none';
-    
+
     // Show search/filter section
     if (searchFilter) searchFilter.style.display = 'flex';
-    
+
     // Store original data
     allMenuItems = menuData;
-    
+
     // Clear container
     container.innerHTML = '';
     container.style.display = 'block';
-    
+
     // Check if menuData has the expected structure
     if (!menuData || !Array.isArray(menuData)) {
       throw new Error('Invalid menu data structure');
     }
-    
+
     // Group items by category
     const categories = {};
-    
+
     menuData.forEach(item => {
-      const categoryName = item.category || 
-                          item.category_name || 
-                          item.categoryName || 
-                          item.category?.name ||
-                          'Other';
-      
+      const categoryName = item.category ||
+        item.category_name ||
+        item.categoryName ||
+        item.category?.name ||
+        'Other';
+
       const categoryKey = typeof categoryName === 'string' ? categoryName : (categoryName?.name || 'Other');
-      
+
       if (!categories[categoryKey]) {
         categories[categoryKey] = [];
       }
       categories[categoryKey].push(item);
     });
-    
+
     // Store categories globally
     allCategories = categories;
-    
+
     // Create category filter buttons
     createCategoryFilters(Object.keys(categories));
-    
+
     // Initialize active category if not set
     if (!document.querySelector('.category-filter-btn.active')) {
       activeCategory(filterCategory);
     }
-    
+
     // Filter items based on category and search
     let filteredCategories = {};
     Object.keys(categories).forEach(categoryName => {
       let items = categories[categoryName];
-      
+
       // Filter by category
       if (filterCategory !== 'all' && categoryName !== filterCategory) {
         return;
       }
-      
+
       // Filter by search query
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -742,28 +800,28 @@ function renderMenuItems(menuData, filterCategory = 'all', searchQuery = '') {
           return name.includes(query) || description.includes(query);
         });
       }
-      
+
       if (items.length > 0) {
         filteredCategories[categoryName] = items;
       }
     });
-    
+
     // Render each category
     Object.keys(filteredCategories).forEach(categoryName => {
       const categorySection = document.createElement('section');
       categorySection.className = 'menu-category-section';
       categorySection.setAttribute('aria-labelledby', `category-${categoryName.replace(/\s+/g, '-').toLowerCase()}`);
-      
+
       const categoryId = `category-${categoryName.replace(/\s+/g, '-').toLowerCase()}`;
       const iconClass = getCategoryIcon(categoryName);
-      
+
       // Escape HTML to prevent XSS
       const escapeHtml = (text) => {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
       };
-      
+
       categorySection.innerHTML = `
         <h2 id="${categoryId}" class="menu-category-title">
           <i class="fas ${iconClass}" aria-hidden="true"></i>
@@ -771,15 +829,15 @@ function renderMenuItems(menuData, filterCategory = 'all', searchQuery = '') {
         </h2>
         <div class="menu-items-grid" role="list">
           ${filteredCategories[categoryName].map(item => {
-            const itemName = item.name || item.title || item.item_name || 'Unnamed Item';
-            const itemDescription = (item.description || item.item_description || '').trim();
-            const itemPrice = item.price || item.item_price || item.selling_price || '';
-            const itemImage = item.image || item.image_url || item.item_image || item.photo_url || '';
-            const itemId = item.id || item.item_id || '';
-            const categoryIcon = getCategoryIcon(categoryName);
-            const hasDescription = itemDescription && itemDescription.length > 0 && itemDescription !== 'null' && itemDescription !== 'undefined';
-            
-            return `
+        const itemName = item.name || item.title || item.item_name || 'Unnamed Item';
+        const itemDescription = (item.description || item.item_description || '').trim();
+        const itemPrice = item.price || item.item_price || item.selling_price || '';
+        const itemImage = item.image || item.image_url || item.item_image || item.photo_url || '';
+        const itemId = item.id || item.item_id || '';
+        const categoryIcon = getCategoryIcon(categoryName);
+        const hasDescription = itemDescription && itemDescription.length > 0 && itemDescription !== 'null' && itemDescription !== 'undefined';
+
+        return `
               <article class="menu-item-card" role="listitem" data-item-id="${escapeHtml(String(itemId))}">
                 ${itemImage ? `
                   <div class="menu-item-image">
@@ -797,26 +855,29 @@ function renderMenuItems(menuData, filterCategory = 'all', searchQuery = '') {
                 ${itemPrice ? `<div class="menu-item-price">${formatPrice(itemPrice)}</div>` : ''}
               </article>
             `;
-          }).join('')}
+      }).join('')}
         </div>
       `;
-      
+
       container.appendChild(categorySection);
     });
-    
+
     // Smooth scroll to first category section after render (if filtering)
     if (filterCategory !== 'all' && Object.keys(filteredCategories).length > 0) {
+      // Double RAF for smoother scroll after DOM update
       requestAnimationFrame(() => {
-        const firstCategory = container.querySelector('.menu-category-section');
-        if (firstCategory) {
-          firstCategory.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-          });
-        }
+        requestAnimationFrame(() => {
+          const firstCategory = container.querySelector('.menu-category-section');
+          if (firstCategory) {
+            firstCategory.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+        });
       });
     }
-    
+
     // If no categories found, show message
     if (Object.keys(filteredCategories).length === 0) {
       container.innerHTML = `
@@ -826,7 +887,7 @@ function renderMenuItems(menuData, filterCategory = 'all', searchQuery = '') {
         </div>
       `;
     }
-    
+
   } catch (err) {
     if (error) {
       error.style.display = 'block';
@@ -841,14 +902,14 @@ function renderMenuItems(menuData, filterCategory = 'all', searchQuery = '') {
 function createCategoryFilters(categoryNames) {
   const filterContainer = document.getElementById('categoryFilterButtons');
   if (!filterContainer) return;
-  
+
   // Remove only dynamically created category buttons (not the "All" button)
   const existingButtons = filterContainer.querySelectorAll('.category-filter-btn:not([data-category="all"])');
   existingButtons.forEach(btn => btn.remove());
-  
+
   // Sort categories alphabetically
   const sortedCategories = [...categoryNames].sort();
-  
+
   // Create and append category buttons
   sortedCategories.forEach(categoryName => {
     const button = document.createElement('button');
@@ -858,26 +919,26 @@ function createCategoryFilters(categoryNames) {
     button.innerHTML = `<span>${categoryName}</span>`;
     filterContainer.appendChild(button);
   });
-  
+
   // Use event delegation on the container to handle all button clicks
   // This avoids duplicate listeners and works for dynamically added buttons
   if (!filterContainer.hasAttribute('data-listener-attached')) {
     filterContainer.addEventListener('click', (e) => {
       const button = e.target.closest('.category-filter-btn');
       if (!button) return;
-      
+
       // Get category and set it as active
       const category = button.dataset.category;
       activeCategory(category);
-      
+
       // Get search query
       const searchInput = document.getElementById('menuSearchInput');
       const searchQuery = searchInput ? searchInput.value.trim() : '';
-      
+
       // Filter and render
       renderMenuItems(allMenuItems, category, searchQuery);
     });
-    
+
     filterContainer.setAttribute('data-listener-attached', 'true');
   }
 }
@@ -887,23 +948,23 @@ function initMenuSearchFilter() {
   const searchInput = document.getElementById('menuSearchInput');
   const clearSearch = document.getElementById('clearSearch');
   const allFilterBtn = document.querySelector('.category-filter-btn[data-category="all"]');
-  
+
   if (!searchInput) return;
-  
+
   // Search input handler with optimized debouncing
   let searchTimeout;
   let searchRafId;
   searchInput.addEventListener('input', (e) => {
     clearTimeout(searchTimeout);
     if (searchRafId) cancelAnimationFrame(searchRafId);
-    
+
     const query = e.target.value.trim();
-    
+
     // Show/hide clear button immediately (no debounce needed)
     if (clearSearch) {
       clearSearch.style.display = query ? 'flex' : 'none';
     }
-    
+
     // Debounce search with requestAnimationFrame for smoother performance
     searchRafId = requestAnimationFrame(() => {
       searchTimeout = setTimeout(() => {
@@ -912,7 +973,7 @@ function initMenuSearchFilter() {
       }, 300);
     });
   }, { passive: true });
-  
+
   // Clear search handler
   if (clearSearch) {
     clearSearch.addEventListener('click', () => {
@@ -923,7 +984,7 @@ function initMenuSearchFilter() {
       searchInput.focus();
     });
   }
-  
+
   // All filter button handler
   if (allFilterBtn) {
     allFilterBtn.addEventListener('click', () => {
@@ -952,12 +1013,12 @@ async function loadMenu() {
   try {
     // Try menu endpoint first (main-menu/1/categories/...)
     const menuURL = DELIVERGATE_API.getMenuURL(1);
-    
+
     let apiData = await DELIVERGATE_API.fetchWithTimeout(menuURL);
-    
+
     // Process Delivergate API response
     let menuItems = [];
-    
+
     // Handle categorized data structure: { data: { "Category Name": [items], ... } }
     if (apiData && apiData.data && typeof apiData.data === 'object' && !Array.isArray(apiData.data)) {
       Object.entries(apiData.data).forEach(([categoryName, items]) => {
@@ -989,7 +1050,7 @@ async function loadMenu() {
           }
         }
       });
-    } 
+    }
     // Handle categories array that might contain items or subcategories
     else if (apiData && Array.isArray(apiData)) {
       // Check if it's an array of categories with items
@@ -1039,7 +1100,7 @@ async function loadMenu() {
         category: item.category || item.category_name || 'Other'
       }));
     }
-    
+
     if (menuItems.length > 0) {
       renderMenuItems(menuItems);
       // Initialize search and filter after menu is rendered
@@ -1052,7 +1113,7 @@ async function loadMenu() {
     } else {
       throw new Error('No menu items found in API response');
     }
-    
+
   } catch (err) {
     // Show static menu on error
     if (staticGallery) staticGallery.style.display = 'grid';
@@ -1079,12 +1140,12 @@ if (window.location.pathname.includes('menu.html') || document.querySelector('.m
 }
 
 // Update copyright year dynamically
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const yearElement = document.getElementById('current-year');
   if (yearElement) {
     yearElement.textContent = new Date().getFullYear();
   }
-  
+
   // Initialize GSAP Hero Animations
   initHeroAnimations();
 });
@@ -1098,12 +1159,12 @@ function initHeroAnimations() {
     console.warn('GSAP not loaded');
     return;
   }
-  
+
   // Register ScrollTrigger plugin
   if (typeof ScrollTrigger !== 'undefined') {
     gsap.registerPlugin(ScrollTrigger);
   }
-  
+
   // Set initial states
   gsap.set('.hero-badge', { opacity: 0, y: -30 });
   gsap.set('.hero-title-line', { opacity: 0, y: 50 });
@@ -1112,10 +1173,10 @@ function initHeroAnimations() {
   gsap.set('.hero-cta-group', { opacity: 0, y: 30 });
   gsap.set('.hero-scroll-indicator', { opacity: 0 });
   gsap.set('.hero-shape', { opacity: 0, scale: 0.5 });
-  
+
   // Create master timeline
   const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-  
+
   // 1. Badge animation
   tl.to('.hero-badge', {
     opacity: 1,
@@ -1123,7 +1184,7 @@ function initHeroAnimations() {
     duration: 0.8,
     ease: 'back.out(1.7)'
   });
-  
+
   // 2. Title lines stagger animation
   tl.to('.hero-title-line', {
     opacity: 1,
@@ -1132,34 +1193,34 @@ function initHeroAnimations() {
     stagger: 0.2,
     ease: 'power3.out'
   }, '-=0.4');
-  
+
   // 3. Subtitle fade in
   tl.to('.hero-subtitle', {
     opacity: 1,
     y: 0,
     duration: 0.8
   }, '-=0.5');
-  
+
   // 3b. Tagline fade in
   tl.to('.hero-tagline', {
     opacity: 0.95,
     y: 0,
     duration: 0.7
   }, '-=0.6');
-  
+
   // 4. CTA buttons
   tl.to('.hero-cta-group', {
     opacity: 1,
     y: 0,
     duration: 0.8
   }, '-=0.6');
-  
+
   // 5. Scroll indicator
   tl.to('.hero-scroll-indicator', {
     opacity: 1,
     duration: 0.6
   }, '-=0.4');
-  
+
   // 6. Background shapes (subtle so hero image stays visible)
   tl.to('.hero-shape', {
     opacity: 0.08,
@@ -1167,7 +1228,7 @@ function initHeroAnimations() {
     duration: 1.5,
     stagger: 0.2
   }, 0);
-  
+
   if (typeof ScrollTrigger !== 'undefined') {
     // Parallax for background shapes
     gsap.to('.hero-shape-1', {
@@ -1179,7 +1240,7 @@ function initHeroAnimations() {
         scrub: true
       }
     });
-    
+
     gsap.to('.hero-shape-2', {
       y: -100,
       scrollTrigger: {
@@ -1190,7 +1251,7 @@ function initHeroAnimations() {
       }
     });
   }
-  
+
   // Add hover animations for CTA buttons
   const ctaPrimary = document.querySelector('.cta-primary');
   if (ctaPrimary) {
@@ -1201,7 +1262,7 @@ function initHeroAnimations() {
         ease: 'power2.out'
       });
     });
-    
+
     ctaPrimary.addEventListener('mouseleave', () => {
       gsap.to(ctaPrimary, {
         scale: 1,
@@ -1210,7 +1271,7 @@ function initHeroAnimations() {
       });
     });
   }
-  
+
   const ctaSecondary = document.querySelector('.cta-secondary');
   if (ctaSecondary) {
     ctaSecondary.addEventListener('mouseenter', () => {
@@ -1220,7 +1281,7 @@ function initHeroAnimations() {
         ease: 'power2.out'
       });
     });
-    
+
     ctaSecondary.addEventListener('mouseleave', () => {
       gsap.to(ctaSecondary, {
         scale: 1,
@@ -1229,7 +1290,7 @@ function initHeroAnimations() {
       });
     });
   }
-  
+
   // Add continuous rotation to badge icon
   gsap.to('.badge-icon', {
     rotation: 360,
