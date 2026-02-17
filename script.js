@@ -215,6 +215,43 @@ const reviews = [
     text: "very sweet guy absolutely love it here food is 10/10 make conversation and you'll have the time of your life",
     name: "Selma Telford",
     stars: 5
+  },
+  {
+    text: "Just had a lovely meal including two chicken burgers and southern fried style chicken (which I was craving and not had in years!). Glad I tried it out and main man in there is very welcoming .. thank you for he hospitality bro.",
+    name: "CF62 Home Related Works",
+    stars: 5
+  },
+  {
+    text: "Honestly, these chicken burgers were on another level. Perfectly cooked crispy on the outside, juicy on the inside and packed with flavour in every bite. The seasoning was spot-on, and the toppings were fresh and balanced, not overloaded like some places do. You can tell real care goes into making them. The bun was soft but held together beautifully, and the sauce tied everything together perfectly. Easily the best chicken burger I've had in a long time — I'm already planning my next visit! Highly recommend to anyone who loves a proper, well-made chicken burger.",
+    name: "Louca Ioannou",
+    stars: 5
+  },
+  {
+    text: "Soooo popped in grab and dine for some dinner for the family and ordered peri peri whole chicken , combo maxi and nuggets and chips for the my little one. Waited 15 minutes and took it home to find the peri peri chicken was packed full of flavour, chicken wings and tenders were cooked to perfection and my little one enjoyed her nuggets and chips. She there the best nuggets in the world. Definatley ordering from grab and dine again. 5 *",
+    name: "Terry Harmsworth",
+    stars: 5,
+    isLocalGuide: true
+  },
+  {
+    text: "Chicken is tender and crispy and has a great southern American taste to it and it's lovely, food is also clean and they have lots of manners 😂",
+    name: "Romeo Anvari",
+    stars: 5
+  },
+  {
+    text: "Really nice little place staffed by lovely people! food is really good and I love how they have sri lankan food as well. definitely give it a go",
+    name: "Amanda \"Manda\" Beligoda",
+    stars: 5
+  },
+  {
+    text: "Great food, especially their peri peri chicken, great value and the guys there are really friendly.",
+    name: "Max MacKenzie",
+    stars: 5,
+    isLocalGuide: true
+  },
+  {
+    text: "I've been here a few times! The food is great, even the ones I wouldn't normally eat elsewhere. The customer service is 100%, can't ask for better. Pratik is a super nice gentle man!",
+    name: "Obinna Amakor",
+    stars: 5
   }
 ];
 let reviewIndex = 0;
