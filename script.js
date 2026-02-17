@@ -258,7 +258,6 @@ let reviewIndex = 0;
 const reviewSlide = document.getElementById('reviewSlide');
 const reviewPrev = document.getElementById('reviewPrev');
 const reviewNext = document.getElementById('reviewNext');
-const reviewsDots = document.getElementById('reviewsDots');
 
 function renderReview(idx) {
   if (!reviewSlide) return;
@@ -300,38 +299,9 @@ function renderReview(idx) {
       reviewSlide.style.opacity = 1;
     });
   });
-  updateReviewDots(idx);
-}
-
-function updateReviewDots(activeIdx) {
-  if (!reviewsDots) return;
-  const dots = reviewsDots.querySelectorAll('.review-dot');
-  dots.forEach((dot, i) => {
-    dot.classList.toggle('active', i === activeIdx);
-    dot.setAttribute('aria-selected', i === activeIdx);
-  });
-}
-
-function initReviewDots() {
-  if (!reviewsDots) return;
-  reviewsDots.innerHTML = reviews.map((_, i) => 
-    `<button class="review-dot ${i === 0 ? 'active' : ''}" 
-             role="tab" 
-             aria-selected="${i === 0}" 
-             aria-label="View review ${i + 1}" 
-             data-index="${i}"></button>`
-  ).join('');
-  
-  reviewsDots.querySelectorAll('.review-dot').forEach(dot => {
-    dot.addEventListener('click', () => {
-      reviewIndex = parseInt(dot.dataset.index);
-      renderReview(reviewIndex);
-    });
-  });
 }
 
 if (reviewSlide) {
-  initReviewDots();
   renderReview(reviewIndex);
 }
 if (reviewPrev) reviewPrev.addEventListener('click', () => {
