@@ -78,6 +78,8 @@
 
   <!-- Preload critical assets -->
   <link rel="preload" href="style.css" as="style">
+  <link rel="preload" href="images/hero4.png" as="image" fetchpriority="high">
+  <link rel="preload" href="images/hero4@2x.png" as="image" fetchpriority="high" media="(min-resolution: 2dppx)">
 
   <!-- Font loading with display swap for better performance -->
   <link rel="preload"
@@ -100,9 +102,6 @@
 
   <link rel="stylesheet" href="style.css">
 
-  <!-- GSAP Animation Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
 
   <!-- Structured Data (JSON-LD) -->
   <script type="application/ld+json">

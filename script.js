@@ -1,65 +1,32 @@
 // script.js - Enhanced with accessibility and UX improvements
 
-// Performance optimization: Use passive event listeners for better scroll performance
-// Enable smooth scrolling with CSS scroll-behavior and JavaScript fallback
-
-// Smooth scroll polyfill for older browsers
-if (!('scrollBehavior' in document.documentElement.style)) {
-  // Load smooth scroll polyfill if needed
-  const script = document.createElement('script');
-  script.src = 'https://cdn.jsdelivr.net/npm/smoothscroll-polyfill@0.4.4/dist/smoothscroll.min.js';
-  document.head.appendChild(script);
-}
-
-// 1. Back to Top Button with optimized scroll handling
+// 1. Back to Top Button
 const backToTopBtn = document.getElementById('backToTop');
 
 let scrollTicking = false;
-let lastScrollY = 0;
-
 function toggleBackToTop() {
   if (!scrollTicking) {
     scrollTicking = true;
     requestAnimationFrame(() => {
-      const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
-
       if (backToTopBtn) {
-        if (currentScrollY > 300) {
+        if (window.pageYOffset > 300) {
           backToTopBtn.classList.add('visible');
         } else {
           backToTopBtn.classList.remove('visible');
         }
       }
-
-      lastScrollY = currentScrollY;
       scrollTicking = false;
     });
   }
 }
 
 if (backToTopBtn) {
-  // Use passive listener for better scroll performance
   window.addEventListener('scroll', toggleBackToTop, { passive: true });
-
-  backToTopBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    // Smooth scroll to top with fallback
-    if ('scrollBehavior' in document.documentElement.style) {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    } else {
-      // Fallback smooth scroll for older browsers
-      const scrollToTop = () => {
-        const currentScroll = document.documentElement.scrollTop || document.body.scrollTop;
-        if (currentScroll > 0) {
-          window.requestAnimationFrame(scrollToTop);
-          window.scrollTo(0, currentScroll - currentScroll / 8);
-        }
-      };
-      scrollToTop();
-    }
+  backToTopBtn.addEventListener('click', () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   });
 }
 
@@ -121,21 +88,15 @@ if (prevBtn && nextBtn && carouselTrack && carouselItems.length > 0) {
   });
 }
 
-// Optimized resize handler with requestAnimationFrame
+// Debounced resize handler for better performance
 let resizeTimeout;
-let resizeRafId;
-
 function handleResize() {
   clearTimeout(resizeTimeout);
-  if (resizeRafId) cancelAnimationFrame(resizeRafId);
-
-  resizeRafId = requestAnimationFrame(() => {
-    resizeTimeout = setTimeout(() => {
-      if (mobileCarouselInterval) clearInterval(mobileCarouselInterval);
-      if (isMobile() && carouselTrack) startMobileCarouselAutoSlide();
-      updateCarousel({ scroll: false });
-    }, 150);
-  });
+  resizeTimeout = setTimeout(() => {
+    if (mobileCarouselInterval) clearInterval(mobileCarouselInterval);
+    if (isMobile() && carouselTrack) startMobileCarouselAutoSlide();
+    updateCarousel({ scroll: false });
+  }, 150);
 }
 
 window.addEventListener('resize', handleResize, { passive: true });
@@ -183,13 +144,15 @@ function initHamburgerMenu() {
       hamburgerInput.checked = true;
       hamburgerInput.setAttribute('aria-expanded', 'true');
       if (navbar) navbar.classList.add('menu-open');
-      document.body.style.overflow = 'hidden';
+      // Only block vertical scroll on body, NOT using position:fixed (avoids mobile scroll kill)
+      document.body.style.overflowY = 'hidden';
     } else {
       navLinks.classList.remove('open');
       hamburgerInput.checked = false;
       hamburgerInput.setAttribute('aria-expanded', 'false');
       if (navbar) navbar.classList.remove('menu-open');
-      document.body.style.overflow = '';
+      // Restore vertical scroll
+      document.body.style.overflowY = '';
     }
   }
 
@@ -411,18 +374,16 @@ function openOrderModal() {
   if (orderModal) {
     lastFocusedElement = document.activeElement;
 
-    // Store current scroll position
+    // Store scroll position on html element (avoids position:fixed page-jump)
     const scrollY = window.scrollY;
-    document.body.setAttribute('data-scroll-y', scrollY);
+    document.documentElement.setAttribute('data-scroll-y', scrollY);
 
-    // Prevent background scroll using overflow instead of position:fixed
-    // This is more reliable across different mobile devices
+    // Lock scroll using overflow only — no position:fixed (fixes mobile scroll kill)
     document.body.classList.add('modal-open');
     document.body.style.overflow = 'hidden';
-    document.body.style.height = '100vh';
     document.body.style.touchAction = 'none';
 
-    // Prevent touch scrolling on background (iOS and Android)
+    // Prevent touch scrolling on iOS (only outside modal content)
     document.addEventListener('touchmove', preventScroll, { passive: false });
 
     orderModal.style.display = 'flex';
@@ -442,28 +403,8 @@ function openOrderModal() {
 
 function preventScroll(e) {
   // Allow scrolling within the modal content
-  const modalContent = e.target.closest('.order-modal-content');
-  if (modalContent) {
-    // Check if the content is scrollable
-    const isScrollable = modalContent.scrollHeight > modalContent.clientHeight;
-    if (isScrollable) {
-      // Allow scrolling within modal content
-      const scrollTop = modalContent.scrollTop;
-      const scrollHeight = modalContent.scrollHeight;
-      const clientHeight = modalContent.clientHeight;
-      const delta = e.touches ? e.touches[0].clientY - (e.touches[0].previousY || e.touches[0].clientY) : 0;
-
-      // Store previous touch position
-      if (e.touches && e.touches[0]) {
-        e.touches[0].previousY = e.touches[0].clientY;
-      }
-
-      // Prevent overscroll
-      if ((scrollTop <= 0 && delta > 0) || (scrollTop + clientHeight >= scrollHeight && delta < 0)) {
-        e.preventDefault();
-      }
-      return;
-    }
+  if (e.target.closest('.order-modal-content')) {
+    return;
   }
   // Prevent scrolling on the background
   e.preventDefault();
@@ -473,19 +414,19 @@ function closeOrderModal() {
   if (orderModal) {
     orderModal.style.display = 'none';
 
-    // Restore background scroll
-    const scrollY = document.body.getAttribute('data-scroll-y') || '0';
+    // Restore scroll
+    const scrollY = parseInt(document.documentElement.getAttribute('data-scroll-y') || '0', 10);
+    document.documentElement.removeAttribute('data-scroll-y');
+
     document.body.classList.remove('modal-open');
     document.body.style.overflow = '';
-    document.body.style.height = '';
     document.body.style.touchAction = '';
-    document.body.removeAttribute('data-scroll-y');
 
-    // Remove touch scroll prevention
+    // Always remove touch scroll prevention (even if something went wrong)
     document.removeEventListener('touchmove', preventScroll);
 
     // Restore scroll position
-    window.scrollTo(0, parseInt(scrollY, 10));
+    window.scrollTo(0, scrollY);
 
     document.removeEventListener('keydown', trapFocus);
 
@@ -864,17 +805,14 @@ function renderMenuItems(menuData, filterCategory = 'all', searchQuery = '') {
 
     // Smooth scroll to first category section after render (if filtering)
     if (filterCategory !== 'all' && Object.keys(filteredCategories).length > 0) {
-      // Double RAF for smoother scroll after DOM update
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const firstCategory = container.querySelector('.menu-category-section');
-          if (firstCategory) {
-            firstCategory.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start'
-            });
-          }
-        });
+        const firstCategory = container.querySelector('.menu-category-section');
+        if (firstCategory) {
+          firstCategory.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
       });
     }
 
@@ -1146,156 +1084,19 @@ document.addEventListener('DOMContentLoaded', function () {
     yearElement.textContent = new Date().getFullYear();
   }
 
-  // Initialize GSAP Hero Animations
-  initHeroAnimations();
+  // Safety reset: clear any stuck scroll locks from previous sessions
+  // (e.g. if the user refreshed while a modal was open)
+  document.body.style.overflow = '';
+  document.body.style.overflowY = '';
+  document.body.style.overflowX = '';
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  document.body.style.touchAction = '';
+  document.body.classList.remove('modal-open');
+  document.documentElement.removeAttribute('data-scroll-y');
 });
 
 // ============================================
-// GSAP HERO ANIMATIONS
+// GSAP REMOVED - Animations handled via CSS
 // ============================================
-function initHeroAnimations() {
-  // Check if GSAP is loaded
-  if (typeof gsap === 'undefined') {
-    console.warn('GSAP not loaded');
-    return;
-  }
-
-  // Register ScrollTrigger plugin
-  if (typeof ScrollTrigger !== 'undefined') {
-    gsap.registerPlugin(ScrollTrigger);
-  }
-
-  // Set initial states
-  gsap.set('.hero-badge', { opacity: 0, y: -30 });
-  gsap.set('.hero-title-line', { opacity: 0, y: 50 });
-  gsap.set('.hero-subtitle', { opacity: 0, y: 30 });
-  gsap.set('.hero-tagline', { opacity: 0, y: 20 });
-  gsap.set('.hero-cta-group', { opacity: 0, y: 30 });
-  gsap.set('.hero-scroll-indicator', { opacity: 0 });
-  gsap.set('.hero-shape', { opacity: 0, scale: 0.5 });
-
-  // Create master timeline
-  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-
-  // 1. Badge animation
-  tl.to('.hero-badge', {
-    opacity: 1,
-    y: 0,
-    duration: 0.8,
-    ease: 'back.out(1.7)'
-  });
-
-  // 2. Title lines stagger animation
-  tl.to('.hero-title-line', {
-    opacity: 1,
-    y: 0,
-    duration: 1,
-    stagger: 0.2,
-    ease: 'power3.out'
-  }, '-=0.4');
-
-  // 3. Subtitle fade in
-  tl.to('.hero-subtitle', {
-    opacity: 1,
-    y: 0,
-    duration: 0.8
-  }, '-=0.5');
-
-  // 3b. Tagline fade in
-  tl.to('.hero-tagline', {
-    opacity: 0.95,
-    y: 0,
-    duration: 0.7
-  }, '-=0.6');
-
-  // 4. CTA buttons
-  tl.to('.hero-cta-group', {
-    opacity: 1,
-    y: 0,
-    duration: 0.8
-  }, '-=0.6');
-
-  // 5. Scroll indicator
-  tl.to('.hero-scroll-indicator', {
-    opacity: 1,
-    duration: 0.6
-  }, '-=0.4');
-
-  // 6. Background shapes (subtle so hero image stays visible)
-  tl.to('.hero-shape', {
-    opacity: 0.08,
-    scale: 1,
-    duration: 1.5,
-    stagger: 0.2
-  }, 0);
-
-  if (typeof ScrollTrigger !== 'undefined') {
-    // Parallax for background shapes
-    gsap.to('.hero-shape-1', {
-      y: 150,
-      scrollTrigger: {
-        trigger: '.hero',
-        start: 'top top',
-        end: 'bottom top',
-        scrub: true
-      }
-    });
-
-    gsap.to('.hero-shape-2', {
-      y: -100,
-      scrollTrigger: {
-        trigger: '.hero',
-        start: 'top top',
-        end: 'bottom top',
-        scrub: true
-      }
-    });
-  }
-
-  // Add hover animations for CTA buttons
-  const ctaPrimary = document.querySelector('.cta-primary');
-  if (ctaPrimary) {
-    ctaPrimary.addEventListener('mouseenter', () => {
-      gsap.to(ctaPrimary, {
-        scale: 1.05,
-        duration: 0.3,
-        ease: 'power2.out'
-      });
-    });
-
-    ctaPrimary.addEventListener('mouseleave', () => {
-      gsap.to(ctaPrimary, {
-        scale: 1,
-        duration: 0.3,
-        ease: 'power2.out'
-      });
-    });
-  }
-
-  const ctaSecondary = document.querySelector('.cta-secondary');
-  if (ctaSecondary) {
-    ctaSecondary.addEventListener('mouseenter', () => {
-      gsap.to(ctaSecondary, {
-        scale: 1.05,
-        duration: 0.3,
-        ease: 'power2.out'
-      });
-    });
-
-    ctaSecondary.addEventListener('mouseleave', () => {
-      gsap.to(ctaSecondary, {
-        scale: 1,
-        duration: 0.3,
-        ease: 'power2.out'
-      });
-    });
-  }
-
-  // Add continuous rotation to badge icon
-  gsap.to('.badge-icon', {
-    rotation: 360,
-    duration: 3,
-    ease: 'linear',
-    repeat: -1
-  });
-}
